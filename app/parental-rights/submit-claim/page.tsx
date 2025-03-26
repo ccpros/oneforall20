@@ -53,7 +53,8 @@ export default function SubmitComplaintPage() {
     "Denial of fair hearing",
     "Failure to accommodate disabilities",
     "Judicial bias or misconduct",
-    "Lawyer misconduct or dishonesty"
+    "Lawyer misconduct or dishonesty",
+    "Other"
   ];
 
   const handleChange = <K extends keyof FormDataType>(field: K, value: FormDataType[K]) => {
@@ -105,7 +106,7 @@ export default function SubmitComplaintPage() {
   };
 
   return (
-    <div className="min-h-screen mt-16 bg-gray-100 dark:bg-gray-900 px-4 py-10 text-gray-900 dark:text-gray-100">
+    <div className="min-h-screen mt-16 bg-gray-100 dark:bg-gray-900 px-4 py-5 text-gray-900 dark:text-gray-100">
       <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-xl shadow dark:shadow-gray-600 dark:shadow-md">
         <h1 className="text-2xl font-bold mb-6 text-center">
           File a Parental Rights Complaint
@@ -123,16 +124,16 @@ export default function SubmitComplaintPage() {
         {step === 1 && (
           <div className="space-y-1">
             <div className="flex space-x-2 justify-between">
-            <Label className="flex min-w-16 items-center text-xs md:stext-sm">First Name</Label>
-            <Input className="h-7 items-center text-xs md:text-sm border-gray-600" value={formData.firstName} onChange={(e) => handleChange("firstName", e.target.value)} required />
+            <Label className="flex min-w-16 md:min-w-20 items-center text-xs md:text-sm">First Name</Label>
+            <Input className="h-7 items-center text-xs md:text-sm dark:border-gray-600" value={formData.firstName} onChange={(e) => handleChange("firstName", e.target.value)} required />
             
-            <Label className="flex min-w-16 items-center text-xs md:text-sm">Last Name</Label>
-            <Input className="h-7 items-center text-xs md:text-sm border-gray-600 " value={formData.lastName} onChange={(e) => handleChange("lastName", e.target.value)} required />
+            <Label className="flex min-w-16 md:min-w-20 items-center text-xs md:text-sm">Last Name</Label>
+            <Input className="h-7 items-center text-xs md:text-sm dark:border-gray-600 " value={formData.lastName} onChange={(e) => handleChange("lastName", e.target.value)} required />
             </div>
             <div className="flex space-x-2 justify-between pt-4">
             <Label className="flex items-center text-xs md:text-sm">Email</Label>
             <Input 
-                className="h-7 items-center text-xs md:text-sm"
+                className="h-7 items-center text-xs md:text-sm dark:border-gray-600 dark:muted"
               value={formData.email || user?.emailAddresses?.[0]?.emailAddress || ""} 
               onChange={(e) => handleChange("email", e.target.value)} 
               required
@@ -156,7 +157,7 @@ export default function SubmitComplaintPage() {
 
         {step === 2 && (
           <div className="space-y-4">
-            <div className="text-xs">
+            <div>
             <Label className="text-xs md:text-sm">Claimants</Label>
             {formData.claimants.map((claimant, i) => (
               <Input className="h-6 md:h-8 text-xs md:text-sm dark:border-gray-600" key={i} value={claimant} onChange={(e) => handleDynamicListChange("claimants", i, e.target.value)} />
@@ -164,7 +165,7 @@ export default function SubmitComplaintPage() {
             <Button className="text-xs md:text-sm h-6 md:h-8 mt-2" variant="outline" onClick={() => addToList("claimants")}>+ Add Claimant</Button>
             </div>
 
-            <div className="text-xs">
+            <div>
             <Label className="text-xs md:text-sm">Potential Defendants</Label>
             {formData.defendants.map((defendant, i) => (
               <Input className="text-xs md:text-sm h-6 md:h-8 dark:border-gray-600" key={i} value={defendant} onChange={(e) => handleDynamicListChange("defendants", i, e.target.value)} />
@@ -190,17 +191,20 @@ export default function SubmitComplaintPage() {
 
         
             <Label className="block mt-4 text-sm">Legal Violations</Label>
-            {legalOptions.map((option) => (
-              <div key={option} className="flex items-center space-x-2">
-                <Checkbox
-                  id={option}
-                  checked={formData.legalViolations.includes(option)}
-                  onCheckedChange={() => handleViolationToggle(option)}
-                />
-                <Label className="text-xs md:text-sm" htmlFor={option}>{option}</Label>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {legalOptions.map((option) => (
+                <div key={option} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={option}
+                    checked={formData.legalViolations.includes(option)}
+                    onCheckedChange={() => handleViolationToggle(option)}
+                  />
+                  <Label className="text-xs md:text-sm" htmlFor={option}>{option}</Label>
+                </div>
+              ))}
+            </div>
               
-            ))}
+            
 
             <div className="flex justify-between">
               <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
@@ -214,7 +218,10 @@ export default function SubmitComplaintPage() {
             <Label>Subject</Label>
             <Input className="dark:border-gray-600" value={formData.subject} onChange={(e) => handleChange("subject", e.target.value)} required />
             <Label>Description</Label>
-            <Textarea className="dark:border-gray-600 min-h-40" value={formData.description} onChange={(e) => handleChange("description", e.target.value)} required />
+            <Textarea 
+            placeholder="In summary terms please describe the nature of your complaint, including any relevant details and dates. This is the summary of your complaint that will be submitted to our intake specialists. Example: I am a parent in a custody dispute and I believe my rights have been violated. I have been refused the right to see my child and I have not been given a fair hearing in court. I have evidence of bias from the judge and misconduct from my lawyer. I am seeking help to address these issues. !!We Do Not Expect You To Have Evidence At This Stage!!"
+
+            className="dark:border-gray-600 min-h-40 text-xs" value={formData.description} onChange={(e) => handleChange("description", e.target.value)} required />
             <div className="flex justify-between">
               <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
               <Button onClick={() => {
@@ -238,8 +245,8 @@ export default function SubmitComplaintPage() {
                 checked={formData.consent}
                 onCheckedChange={(checked) => handleChange("consent", !!checked)}
               />
-              <Label htmlFor="consent" className="text-sm">
-                I consent to this information being stored and used for legal purposes.
+              <Label htmlFor="consent" className="text-xs">
+                I consent to the information in this form being stored and used for legal purposes. I understand that I will not be provided legal advice through this process, and that no communications related to this form will be considered legal advice. I also acknowledge that submitting this form does not create an attorney-client relationship. I understand that I may be contacted by a legal professional for further assistance.
               </Label>
             </div>
             <div className="flex justify-between">
