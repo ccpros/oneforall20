@@ -1,6 +1,7 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { SignedIn, SignedOut } from '@clerk/nextjs'
 
 function Hero() {
   return (
@@ -17,11 +18,20 @@ function Hero() {
               </p>
       
               <div className="flex justify-center gap-4 mt-8 flex-wrap">
+                <SignedIn>
                 <Link href="/parental-rights/submit-claim">
                   <span className="bg-blue-600 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition">
                     Submit a Claim
                   </span>
                 </Link>
+                </SignedIn>
+                <SignedOut>
+                <Link href="/parental-rights/sign-up/">
+                  <span className="bg-blue-600 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-700 transition">
+                    Submit a Claim
+                  </span>
+                </Link>
+                </SignedOut>
       
                 <Link href="/parental-rights/resources">
                   <span className="border border-blue-600 text-blue-600 px-6 py-3 rounded-xl hover:bg-blue-50 transition">
