@@ -1,4 +1,4 @@
-import { type SchemaTypeDefinition } from "sanity";
+import { SchemaTypeDefinition } from "sanity";
 import {
   courseType,
   moduleType,
