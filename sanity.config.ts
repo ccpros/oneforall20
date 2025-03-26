@@ -13,6 +13,7 @@ import { apiVersion, dataset, projectId } from "./sanity/env";
 import { schema } from "./sanity/schemaTypes";
 import { structure } from "./sanity/structure";
 import { presentationTool } from "sanity/presentation";
+import { dashboardTool } from "@sanity/dashboard";
 
 export default defineConfig({
   basePath: "/studio",
@@ -32,6 +33,7 @@ export default defineConfig({
         },
       },
     }),
+    dashboardTool({ widgets: []})
   ],
   beta: {
     create: {

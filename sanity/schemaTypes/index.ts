@@ -9,6 +9,7 @@ import { enrollmentType } from "./enrollmentType";
 import { categoryType } from "./categoryType";
 import { lessonCompletionType } from "./lessonCompletionType";
 import { authorType } from "./authorType";
+import { complaintType } from "./complaintType";
 
 export const schema: { types: SchemaTypeDefinition[] } = {
   types: [
@@ -22,6 +23,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     categoryType,
     lessonCompletionType,
     authorType,
+    complaintType,
   ],
 };
 
@@ -34,3 +36,4 @@ export * from "./enrollmentType";
 export * from "./categoryType";
 export * from "./lessonCompletionType";
 export * from "./authorType";
+export * from "./complaintType";

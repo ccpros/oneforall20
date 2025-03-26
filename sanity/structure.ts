@@ -172,4 +172,10 @@ export const structure = (S: StructureBuilder) =>
             .title("System Management")
             .items([S.documentTypeListItem("category").title("Categories")])
         ),
+        S.divider(),
+
+        S.listItem()
+        .title('Complaints')
+        .schemaType('complaint')
+        .child(S.documentTypeList('complaint').title('Complaints')),
     ]);

@@ -94,16 +94,76 @@ export default function SubmitComplaintPage() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.subject || !formData.description) {
-      toast.error("Please fill out all required fields.");
-      return;
+    console.log("🚨 handleSubmit started");
+  
+    try {
+      // Add logs at each critical step
+  
+      if (!formData.firstName || !formData.lastName || !formData.email) {
+        toast.error("Missing required fields");
+        console.log("❌ Missing required fields");
+        return;
+      }
+  
+      let fileUrl = "";
+  
+      if (formData.file) {
+        console.log("📤 Uploading file...");
+  
+        const uploadForm = new FormData();
+        uploadForm.append("file", formData.file);
+  
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: uploadForm,
+        });
+  
+        const uploadResult = await uploadRes.json();
+        console.log("📦 Upload response:", uploadResult);
+  
+        if (!uploadResult.success) {
+          toast.error("Upload failed");
+          return;
+        }
+  
+        fileUrl = uploadResult.url;
+      }
+  
+      console.log("🧾 Sending complaint to Sanity...");
+  
+      const complaint = {
+        _type: "complaint",
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        subject: formData.subject,
+        description: formData.description,
+        fileUrl,
+        consentGiven: formData.consent,
+        submittedAt: new Date().toISOString(),
+      };
+  
+      const sanityRes = await fetch("/api/submit-to-sanity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(complaint),
+      });
+  
+      const sanityResult = await sanityRes.json();
+      console.log("🧾 Sanity result:", sanityResult);
+  
+      if (sanityRes.ok) {
+        toast.success("Complaint submitted");
+      } else {
+        toast.error("Sanity submission failed");
+      }
+    } catch (err) {
+      console.error("💥 handleSubmit crashed:", err);
+      toast.error("Something went wrong.");
     }
-    if (!formData.consent) {
-      toast.error("You must consent before submitting.");
-      return;
-    }
-    toast.success("Complaint submitted successfully.");
   };
+  
 
   return (
     <div className="min-h-screen mt-16 bg-gray-100 dark:bg-gray-900 px-4 py-5 text-gray-900 dark:text-gray-100">
@@ -252,6 +312,7 @@ export default function SubmitComplaintPage() {
             <div className="flex justify-between">
               <Button variant="outline" onClick={() => setStep(3)}>Back</Button>
               <Button onClick={handleSubmit}>Submit</Button>
+
             </div>
           </div>
         )}
