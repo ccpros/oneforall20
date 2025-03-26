@@ -1,7 +1,7 @@
 "use client";
 
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { BookMarkedIcon, BookOpen } from "lucide-react";
+import { BookMarkedIcon, } from "lucide-react";
 import Link from "next/link";
 import { SearchInput } from "./SearchInput";
 import { Button } from "./ui/button";
@@ -18,9 +18,9 @@ export default function Header() {
               prefetch={false}
               className="flex items-center space-x-2 hover:opacity-90 transition-opacity"
             >
-              <BookOpen className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent">
-                Courselly
+              
+              <span className="flex text-lg font-bold bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent">
+              <div className="text-xs text-red-500">by</div>CCPROS
               </span>
             </Link>
 

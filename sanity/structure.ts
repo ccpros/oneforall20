@@ -126,8 +126,41 @@ export const structure = (S: StructureBuilder) =>
                         ])
                     )
                 ),
-            ])
-        ),
+            // Authors with options
+            S.listItem()
+            .title("Authors")
+            .schemaType("author")
+            .child(
+              S.documentTypeList("author")
+                .title("Authors")
+                .child((authorId) =>
+                  S.list()
+                    .title("Author Options")
+                    .items([
+                      // Option to edit author details
+                      S.listItem()
+                        .title("Edit Author Details")
+                        .child(
+                          S.document()
+                            .schemaType("author")
+                            .documentId(authorId)
+                        ),
+                      // Option to view author's posts
+                      S.listItem()
+                        .title("View Posts")
+                        .child(
+                          S.documentList()
+                            .title("Author's Posts")
+                            .filter(
+                              '_type == "post" && author._ref == $authorId'
+                            )
+                            .params({ authorId })
+                        ),
+                    ])
+                )
+            ),
+        ])
+    ),
 
       S.divider(),
 
