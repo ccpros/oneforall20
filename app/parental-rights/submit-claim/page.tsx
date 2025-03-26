@@ -13,19 +13,77 @@ export default function SubmitComplaintPage() {
   const { user } = useUser();
   const [step, setStep] = useState(1);
 
-  const [formData, setFormData] = useState({
+  type FormDataType = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    claimants: string[];
+    defendants: string[];
+    witnesses: string[];
+    caseNumbers: string[];
+    legalViolations: string[];
+    subject: string;
+    description: string;
+    file: File | null;
+    consent: boolean;
+  };
+
+  const [formData, setFormData] = useState<FormDataType>({
     firstName: user?.firstName || "",
     lastName: user?.lastName || "",
     email: user?.emailAddresses?.[0]?.emailAddress || "",
     phone: "",
+    claimants: [""],
+    defendants: [""],
+    witnesses: [""],
+    caseNumbers: [""],
+    legalViolations: [],
     subject: "",
     description: "",
-    file: null as File | null,
+    file: null,
     consent: false,
   });
 
-  const handleChange = (field: string, value: any) => {
+  const legalOptions: string[] = [
+    "Discrimination based on protected status",
+    "Violation of due process rights",
+    "Infringement on parental rights",
+    "Denial of the right to counsel",
+    "Denial of fair hearing",
+    "Failure to accommodate disabilities",
+    "Judicial bias or misconduct",
+    "Lawyer misconduct or dishonesty"
+  ];
+
+  const handleChange = <K extends keyof FormDataType>(field: K, value: FormDataType[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleDynamicListChange = (
+    field: keyof Pick<FormDataType, "claimants" | "defendants" | "witnesses" | "caseNumbers">,
+    index: number,
+    value: string
+  ) => {
+    const updatedList = [...formData[field]];
+    updatedList[index] = value;
+    setFormData((prev) => ({ ...prev, [field]: updatedList }));
+  };
+
+  const addToList = (field: keyof Pick<FormDataType, "claimants" | "defendants" | "witnesses" | "caseNumbers">) => {
+    setFormData((prev) => ({ ...prev, [field]: [...prev[field], ""] }));
+  };
+
+  const handleViolationToggle = (option: string) => {
+    setFormData((prev) => {
+      const exists = prev.legalViolations.includes(option);
+      return {
+        ...prev,
+        legalViolations: exists
+          ? prev.legalViolations.filter((item) => item !== option)
+          : [...prev.legalViolations, option],
+      };
+    });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,145 +93,157 @@ export default function SubmitComplaintPage() {
   };
 
   const handleSubmit = async () => {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.subject || !formData.description) {
+      toast.error("Please fill out all required fields.");
+      return;
+    }
     if (!formData.consent) {
       toast.error("You must consent before submitting.");
       return;
     }
-
-    try {
-      // TODO: Upload file to Azure
-      // TODO: Save complaint to Sanity
-
-      toast.success("Complaint submitted successfully.");
-      setStep(1); // reset form or redirect
-    } catch (err) {
-      toast.error("Submission failed.");
-    }
+    toast.success("Complaint submitted successfully.");
   };
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10 mt-20">
-      <div className="max-w-2xl mx-auto bg-gray-800 p-6 rounded-xl shadow">
+    <div className="min-h-screen mt-16 bg-gray-100 dark:bg-gray-900 px-4 py-10 text-gray-900 dark:text-gray-100">
+      <div className="max-w-2xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-xl shadow dark:shadow-gray-600 dark:shadow-md">
         <h1 className="text-2xl font-bold mb-6 text-center">
           File a Parental Rights Complaint
         </h1>
 
-        {/* Step Indicators */}
         <div className="flex justify-center gap-2 mb-6">
-          {[1, 2, 3].map((s) => (
+          {[1, 2, 3, 4, 5].map((s) => (
             <div
               key={s}
-              className={`h-2 w-8 rounded-full ${
-                s <= step ? "bg-blue-600" : "bg-gray-300"
-              }`}
+              className={`h-2 w-8 rounded-full ${s <= step ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-700"}`}
             />
           ))}
         </div>
 
-        {/* Step 1: Basic Info */}
         {step === 1 && (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="firstName">First Name</Label>
-              <Input
-                id="firstName"
-                className="border-gray-300"
-                value={formData.firstName}
-                onChange={(e) => handleChange("firstName", e.target.value)}
-                
-              />
+          <div className="space-y-1">
+            <div className="flex space-x-2 justify-between">
+            <Label className="flex min-w-16 items-center text-xs md:stext-sm">First Name</Label>
+            <Input className="h-7 items-center text-xs md:text-sm border-gray-600" value={formData.firstName} onChange={(e) => handleChange("firstName", e.target.value)} required />
+            
+            <Label className="flex min-w-16 items-center text-xs md:text-sm">Last Name</Label>
+            <Input className="h-7 items-center text-xs md:text-sm border-gray-600 " value={formData.lastName} onChange={(e) => handleChange("lastName", e.target.value)} required />
             </div>
-            <div>
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input
-              className="border-gray-300"
-                id="lastName"
-                value={formData.lastName}
-                onChange={(e) => handleChange("lastName", e.target.value)}
-              />
+            <div className="flex space-x-2 justify-between pt-4">
+            <Label className="flex items-center text-xs md:text-sm">Email</Label>
+            <Input 
+                className="h-7 items-center text-xs md:text-sm"
+              value={formData.email || user?.emailAddresses?.[0]?.emailAddress || ""} 
+              onChange={(e) => handleChange("email", e.target.value)} 
+              required
+              disabled
+              placeholder="Enter your email"
+            />
             </div>
-            <div>
-              <Label>Email (read-only)</Label>
-              <Input 
-              className="border-gray-300"
-              value={formData.email} disabled />
+            <div className="flex space-x-2 justify-between pt-4">
+            <Label className="flex min-w-24 items-center text-xs md:text-sm">Phone Number</Label>
+            <Input className="h-7 items-center text-xs md:text-sm dark:border-gray-600" value={formData.phone} onChange={(e) => handleChange("phone", e.target.value)} />
             </div>
-            <div>
-              <Label htmlFor="phone">Phone Number (optional)</Label>
-              <Input
-              className="border-gray-300"
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => handleChange("phone", e.target.value)}
-              />
-            </div>
-            <Button className="mt-4" onClick={() => setStep(2)}>
-              Next
-            </Button>
+            <Button onClick={() => {
+              if (!formData.firstName || !formData.lastName || !(formData.email || user?.emailAddresses?.[0]?.emailAddress)) {
+                toast.error("Please complete all required fields before continuing.");
+              } else {
+                setStep(2);
+              }
+            }}>Next</Button>
           </div>
         )}
 
-        {/* Step 2: Complaint Details */}
         {step === 2 && (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="subject">Subject</Label>
-              <Input
-              className="border-gray-300"
-                id="subject"
-                value={formData.subject}
-                onChange={(e) => handleChange("subject", e.target.value)}
-              />
+            <div className="text-xs">
+            <Label className="text-xs md:text-sm">Claimants</Label>
+            {formData.claimants.map((claimant, i) => (
+              <Input className="h-6 md:h-8 text-xs md:text-sm dark:border-gray-600" key={i} value={claimant} onChange={(e) => handleDynamicListChange("claimants", i, e.target.value)} />
+            ))}
+            <Button className="text-xs md:text-sm h-6 md:h-8 mt-2" variant="outline" onClick={() => addToList("claimants")}>+ Add Claimant</Button>
             </div>
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                className="border-gray-300"
-                rows={6}
-                value={formData.description}
-                onChange={(e) => handleChange("description", e.target.value)}
-              />
+
+            <div className="text-xs">
+            <Label className="text-xs md:text-sm">Potential Defendants</Label>
+            {formData.defendants.map((defendant, i) => (
+              <Input className="text-xs md:text-sm h-6 md:h-8 dark:border-gray-600" key={i} value={defendant} onChange={(e) => handleDynamicListChange("defendants", i, e.target.value)} />
+            ))}
+            <Button className="text-xs md:text-sm h-6 md:h-8 mt-2" variant="outline" onClick={() => addToList("defendants")}>+ Add Defendant</Button>
             </div>
-            <div className="flex justify-between mt-4">
-              <Button variant="outline" onClick={() => setStep(1)}>
-                Back
-              </Button>
+
+            <div>
+            <Label className="text-xs md:text-sm">Witnesses</Label>
+            {formData.witnesses.map((witness, i) => (
+              <Input className="text-xs md:text-sm h-6 md:h-8 dark:border-gray-600" key={i} value={witness} onChange={(e) => handleDynamicListChange("witnesses", i, e.target.value)} />
+            ))}
+            <Button className="text-xs md:text-sm h-6 md:h-8 mt-2" variant="outline" onClick={() => addToList("witnesses")}>+ Add Witness</Button>
+            </div>
+
+            <div>
+            <Label className="text-xs md:text-sm">Case Numbers</Label>
+            {formData.caseNumbers.map((cn, i) => (
+              <Input className="text-xs md:text-sm h-6 md:h-8 dark:border-gray-600" key={i} value={cn} onChange={(e) => handleDynamicListChange("caseNumbers", i, e.target.value)} />
+            ))}
+            <Button className="text-xs md:text-sm h-6 md:h-8 mt-2" variant="outline" onClick={() => addToList("caseNumbers")}>+ Add Case Number</Button>
+            </div>
+
+        
+            <Label className="block mt-4 text-sm">Legal Violations</Label>
+            {legalOptions.map((option) => (
+              <div key={option} className="flex items-center space-x-2">
+                <Checkbox
+                  id={option}
+                  checked={formData.legalViolations.includes(option)}
+                  onCheckedChange={() => handleViolationToggle(option)}
+                />
+                <Label className="text-xs md:text-sm" htmlFor={option}>{option}</Label>
+              </div>
+              
+            ))}
+
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
               <Button onClick={() => setStep(3)}>Next</Button>
             </div>
           </div>
         )}
 
-        {/* Step 3: File Upload & Consent */}
         {step === 3 && (
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="file">Upload Supporting Files</Label>
-              <Input
-              className="border-gray-300 hover:text-blue-600"
-                id="file"
-                type="file"
-                accept=".pdf,.doc,.docx,.png,.jpg"
-                onChange={handleFileChange}
-              />
+            <Label>Subject</Label>
+            <Input className="dark:border-gray-600" value={formData.subject} onChange={(e) => handleChange("subject", e.target.value)} required />
+            <Label>Description</Label>
+            <Textarea className="dark:border-gray-600 min-h-40" value={formData.description} onChange={(e) => handleChange("description", e.target.value)} required />
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
+              <Button onClick={() => {
+                if (!formData.subject || !formData.description) {
+                  toast.error("Please complete all required fields before continuing.");
+                } else {
+                  setStep(4);
+                }
+              }}>Next</Button>
             </div>
-            <div className="flex items-center space-x-2 mt-2">
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="space-y-4">
+            <Label>Upload Supporting Files</Label>
+            <Input type="file" onChange={handleFileChange} accept=".pdf,.doc,.docx,.png,.jpg" />
+            <div className="flex items-center space-x-2">
               <Checkbox
-              className="border-gray-300"
                 id="consent"
                 checked={formData.consent}
-                onCheckedChange={(checked) =>
-                  handleChange("consent", !!checked)
-                }
+                onCheckedChange={(checked) => handleChange("consent", !!checked)}
               />
               <Label htmlFor="consent" className="text-sm">
                 I consent to this information being stored and used for legal purposes.
               </Label>
             </div>
-            <div className="flex justify-between mt-4">
-              <Button variant="outline" onClick={() => setStep(2)}>
-                Back
-              </Button>
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setStep(3)}>Back</Button>
               <Button onClick={handleSubmit}>Submit</Button>
             </div>
           </div>
